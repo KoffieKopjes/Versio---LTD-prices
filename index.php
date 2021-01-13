@@ -1,13 +1,13 @@
 <?php
 /*
  * Created by Gino Otten
- * Run cron jon every 15 min or more
+ * Run cron jon every 24 hours or after a update in marge (by database)
  */
 
 // Set username and password
-$url = 'https://www.versio.nl/testapi/v1/tld/info';
-$username = '';
-$password = '';
+$url = 'https://www.versio.nl/api/v1/tld/info';
+$username = 'contact@ginootten.nl';
+$password = '?';
 
 // MySql Details
 $db['host'] = 'localhost';
@@ -79,23 +79,9 @@ $resp = curl_exec($curl);
 $status_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 // Close request to clear up some resources
 curl_close($curl);
+echo $resp;
 // Do something with the response (if you echo it, you will see it's in JSON format) and the status code
-?>
-<table border="1">
-<tr>
-    <th>tld</th>
-    <th>versio_price_registration</th>
-    <th>versio_price_transfer</th>
-    <th>versio_price_renewal</th>
-    <th>minimum_years_required</th>
-    <th>validation_required</th>
-    <th>domain_lock</th>
-    <th>sell_price_registration</th>
-    <th>sell_price_registration</th>
-    <th>sell_price_renewal</th>
-    <th>marge</th>
-</tr>
-<?php
+
     $decode = json_decode($resp);
     foreach ($decode->tldInfo as $domain) {
         $tld = $domain->tld;
@@ -144,4 +130,41 @@ curl_close($curl);
     }
 
 ?>
+<table border="1">
+    <tr>
+        <th>tld</th>
+        <th>versio_price_registration</th>
+        <th>versio_price_transfer</th>
+        <th>versio_price_renewal</th>
+        <th>minimum_years_required</th>
+        <th>validation_required</th>
+        <th>domain_lock</th>
+        <th>sell_price_registration</th>
+        <th>sell_price_transfer</th>
+        <th>sell_price_renewal</th>
+        <th>marge</th>
+        <th>last_update</th>
+        <th>active</th>
+    </tr>
+    <?php
+    $stmt = $dbh->prepare("SELECT * FROM domain_resell_price");
+    $stmt->execute();
+    foreach($stmt as $d){
+        echo '<tr>';
+        echo '<td>' . $d['tld'] . '</td>';
+        echo '<td>' . $d['versio_price_registration'] . '</td>';
+        echo '<td>' . $d['versio_price_transfer'] . '</td>';
+        echo '<td>' . $d['versio_price_renewal'] . '</td>';
+        echo '<td>' . $d['validation_required'] . '</td>';
+        echo '<td>' . $d['minimum_years_required'] . '</td>';
+        echo '<td>' . $d['domain_lock'] . '</td>';
+        echo '<td>' . $d['sell_price_registration'] . '</td>';
+        echo '<td>' . $d['sell_price_transfer'] . '</td>';
+        echo '<td>' . $d['sell_price_renewal'] . '</td>';
+        echo '<td>' . $d['marge'] . '</td>';
+        echo '<td>' . $d['last_update'] . '</td>';
+        echo '<td>' . $d['active'] . '</td>';
+        echo '</tr>';
+    }
+    ?>
 </table>
